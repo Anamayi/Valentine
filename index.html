@@ -1,0 +1,683 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Sankina</title>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=IM+Fell+DW+Pica:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+body {
+  background: radial-gradient(ellipse 80% 60% at 50% 38%, #1c1208 0%, #0d0804 55%, #050302 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'IM Fell DW Pica', serif;
+  gap: 28px;
+}
+
+/* Vignette */
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 65% 55% at 50% 44%,
+    transparent 25%, rgba(0,0,0,0.45) 65%, rgba(0,0,0,0.92) 100%);
+  animation: flicker 8s ease-in-out infinite alternate;
+}
+@keyframes flicker {
+  0%,100%{opacity:1} 30%{opacity:.93} 60%{opacity:.97} 80%{opacity:.9}
+}
+
+/* Dust motes */
+.motes { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.mote {
+  position: absolute; border-radius: 50%;
+  background: rgba(210,175,90,.5);
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  0%   { transform: translateY(105vh) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: .3; }
+  100% { transform: translateY(-8vh) translateX(var(--dx,0)); opacity: 0; }
+}
+
+/* ─── Title ───────────────────────────────────── */
+.title {
+  position: relative; z-index: 10;
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: clamp(.9rem, 2.5vw, 1.4rem);
+  color: #c8a050;
+  letter-spacing: .22em;
+  text-shadow: 0 0 20px rgba(200,160,80,.5), 0 0 50px rgba(200,160,80,.15);
+  opacity: 0;
+  animation: fadeUp 1.6s cubic-bezier(.22,1,.36,1) .4s forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   ENVELOPE  -- pure CSS, clean & realistic
+═══════════════════════════════════════════ */
+.env-scene {
+  position: relative; z-index: 10;
+  opacity: 0;
+  animation: fadeUp 1.4s cubic-bezier(.22,1,.36,1) 1s forwards;
+}
+
+.envelope {
+  position: relative;
+  width: clamp(300px, 48vw, 480px);
+  aspect-ratio: 3/2;
+  cursor: pointer;
+  filter: drop-shadow(0 16px 48px rgba(0,0,0,.85))
+          drop-shadow(0 4px 12px rgba(0,0,0,.6));
+  transition: filter .3s ease;
+}
+.envelope:hover {
+  filter: drop-shadow(0 20px 56px rgba(0,0,0,.9))
+          drop-shadow(0 0 24px rgba(180,138,60,.18));
+}
+.envelope.is-opening {
+  pointer-events: none;
+  animation: envLift 1s cubic-bezier(.4,0,.2,1) .1s forwards;
+}
+@keyframes envLift {
+  to { transform: translateY(-28px) scale(.82); opacity: .25; }
+}
+
+/* The envelope body */
+.env-body {
+  position: absolute; inset: 0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* Aged paper background via layered gradients */
+.env-body-bg {
+  position: absolute; inset: 0;
+  background:
+    /* grain noise via SVG data-uri */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='.3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E"),
+    /* surface gradient */
+    linear-gradient(160deg,
+      #d4aa62 0%, #c49444 20%,
+      #cca04e 45%, #b88838 70%,
+      #c09440 85%, #a87830 100%);
+}
+
+/* Side triangle folds as CSS clip-path shapes */
+.env-fold-left,
+.env-fold-right,
+.env-fold-bottom {
+  position: absolute; inset: 0;
+}
+
+/* Left fold -- darker triangle */
+.env-fold-left {
+  background: linear-gradient(to right, rgba(80,50,8,.55), transparent 55%);
+  clip-path: polygon(0 0, 0 100%, 50% 58%);
+}
+
+/* Right fold */
+.env-fold-right {
+  background: linear-gradient(to left, rgba(60,38,6,.5), transparent 55%);
+  clip-path: polygon(100% 0, 100% 100%, 50% 58%);
+}
+
+/* Bottom fold */
+.env-fold-bottom {
+  background: linear-gradient(to top, rgba(50,30,4,.52), transparent 60%);
+  clip-path: polygon(0 100%, 100% 100%, 50% 58%);
+}
+
+/* Crease lines as pseudo-elements */
+.env-body::before,
+.env-body::after {
+  content: ''; position: absolute; bottom: 0;
+  width: 1px; background: rgba(90,55,10,.35);
+  transform-origin: bottom center;
+}
+.env-body::before { left: 50%; height: 45%; transform: rotate(-34deg) translateX(-50%); }
+.env-body::after  { left: 50%; height: 45%; transform: rotate(34deg) translateX(-50%); }
+
+/* Dark interior strip (visible above flap line) */
+.env-interior {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 52%;
+  background: linear-gradient(to bottom, #1c1004, #2a1808);
+  border-radius: 3px 3px 0 0;
+}
+
+/* ── FLAP (hinges at top, rotates down to reveal interior) ── */
+.env-flap-wrap {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 55%;                   /* flap covers slightly past midpoint */
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  transition: transform .9s cubic-bezier(.42,0,.18,1) .05s;
+  z-index: 5;
+}
+.envelope.is-opening .env-flap-wrap {
+  transform: perspective(900px) rotateX(-180deg);
+}
+
+.env-flap {
+  width: 100%; height: 100%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='.3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.13'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #cfa84e 0%, #b89038 60%, #a07828 100%);
+  /* triangular flap -- pointed at bottom */
+  clip-path: polygon(0 0, 100% 0, 50% 88%);
+  /* very faint bottom shadow on the flap face */
+  box-shadow: 0 4px 0 rgba(60,35,5,.15);
+}
+
+/* Thin crease line at flap fold */
+.env-flap::after {
+  content: ''; position: absolute;
+  top: 100%; left: 0; right: 0; height: 1px;
+  background: rgba(80,48,8,.3);
+}
+
+/* ── WAX SEAL ── clean, flat, pressed ── */
+.seal {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  transition: opacity .2s, transform .2s;
+}
+.envelope.is-opening .seal {
+  opacity: 0;
+  transform: translate(-50%,-50%) scale(.7);
+}
+
+.seal-disc {
+  width: clamp(60px, 11vw, 82px);
+  height: clamp(60px, 11vw, 82px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 45% 38%,
+      #b82020 0%, #8a0e0e 38%, #600808 70%, #3a0404 100%);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.6),
+    0 1px 3px rgba(0,0,0,.4),
+    inset 0 1px 2px rgba(200,80,80,.12);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+
+/* Rim ring -- engraved look */
+.seal-disc::before {
+  content: '';
+  position: absolute; inset: 6%;
+  border-radius: 50%;
+  border: 1px solid rgba(180,40,40,.35);
+  box-shadow: inset 0 0 0 1px rgba(60,0,0,.4);
+}
+
+/* The "A" -- elegant, simple, using actual text with the right font */
+.seal-letter {
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: clamp(22px, 4.2vw, 34px);
+  color: rgba(20,2,2,.82);
+  text-shadow:
+    0 1px 0 rgba(180,60,60,.15),
+    0 -1px 0 rgba(0,0,0,.3);
+  line-height: 1;
+  position: relative; z-index: 1;
+  /* very slight emboss offset */
+  letter-spacing: -.02em;
+}
+
+/* Hint */
+.hint {
+  position: relative; z-index: 10;
+  font-family: 'IM Fell DW Pica', serif; font-style: italic;
+  font-size: clamp(.7rem, 1.6vw, .88rem);
+  color: #c8a050; letter-spacing: .12em;
+  text-shadow: 0 0 12px rgba(200,160,80,.4);
+  opacity: 0;
+  animation: fadeUp 1s ease 2.8s forwards;
+  transition: opacity .4s;
+}
+.hint.gone { opacity: 0 !important; }
+
+/* ─── Backdrop ────────────────────────────────── */
+.backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  background: transparent; pointer-events: none;
+  transition: background 1s ease;
+}
+.backdrop.on { background: rgba(0,0,0,.86); pointer-events: all; }
+
+/* ═══════════════════════════════════════════
+   PARCHMENT LETTER
+═══════════════════════════════════════════ */
+.parch-wrap {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .4s ease;
+}
+.parch-wrap.on { opacity: 1; pointer-events: all; }
+
+.parch-scroll {
+  position: relative;
+  width: min(90vw, 740px);
+  max-height: 90vh;
+  transform-origin: top center;
+  filter:
+    drop-shadow(0 20px 50px rgba(0,0,0,.95))
+    drop-shadow(0 4px 16px rgba(0,0,0,.7));
+  /* start state */
+  opacity: 0;
+  transform: scaleY(.03) translateY(-60px);
+}
+.parch-wrap.on .parch-scroll {
+  animation: unscroll 1.5s cubic-bezier(.22,1,.36,1) .1s forwards;
+}
+@keyframes unscroll {
+  0%   { transform: scaleY(.03) translateY(-60px); opacity: 0; }
+  20%  { opacity: 1; }
+  65%  { transform: scaleY(1.03) translateY(-4px); }
+  82%  { transform: scaleY(.984) translateY(2px); }
+  100% { transform: scaleY(1) translateY(0); opacity: 1; }
+}
+
+/* SVG parchment fills the container */
+.parch-svg { display: block; width: 100%; }
+
+/* Text layer sits over the SVG */
+.parch-text {
+  position: absolute;
+  top: 8.5%; left: 10%; right: 10%; bottom: 8.5%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100,65,15,.35) transparent;
+}
+
+/* ── Letter typography ── */
+.parch-title {
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: clamp(1rem, 2.6vw, 1.55rem);
+  color: #241008;
+  text-align: center;
+  letter-spacing: .04em;
+  text-shadow: 1px 1px 2px rgba(80,35,5,.3);
+  opacity: 0;
+}
+.parch-wrap.on .parch-title { animation: inkIn .9s ease 1.8s forwards; }
+
+.ornament {
+  text-align: center; color: #7a4a18;
+  font-size: clamp(.65rem,1.5vw,.88rem);
+  letter-spacing: .5em; margin: 8px 0 14px;
+  opacity: 0;
+}
+.parch-wrap.on .ornament { animation: inkIn .7s ease 2s forwards; }
+
+.salutation {
+  font-family: 'IM Fell DW Pica', serif; font-style: italic;
+  font-size: clamp(.9rem, 2vw, 1.12rem);
+  color: #241008; margin-bottom: 13px;
+  opacity: 0;
+}
+.parch-wrap.on .salutation { animation: inkIn .8s ease 2.2s forwards; }
+
+.body-text {
+  font-family: 'IM Fell DW Pica', serif;
+  font-size: clamp(.78rem, 1.6vw, .98rem);
+  color: #1e0e08; line-height: 2;
+  opacity: 0;
+}
+.body-text p { margin-bottom: 1em; }
+.body-text .love-list { font-style: italic; line-height: 2.3; }
+.parch-wrap.on .body-text { animation: inkIn .9s ease 2.4s forwards; }
+
+.drop-cap {
+  float: left;
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  line-height: .8; color: #3a1408;
+  margin-right: 6px; margin-top: 4px;
+  text-shadow: 1px 1px 2px rgba(80,30,5,.3);
+}
+
+.closing {
+  font-family: 'IM Fell DW Pica', serif; font-style: italic;
+  font-size: clamp(.88rem, 1.8vw, 1.05rem);
+  color: #241008; text-align: right; margin-top: 14px;
+  opacity: 0;
+}
+.parch-wrap.on .closing { animation: inkIn .7s ease 2.7s forwards; }
+
+.signature {
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: clamp(1rem, 2.4vw, 1.45rem);
+  color: #241008; text-align: right; margin-top: 5px;
+  letter-spacing: .03em;
+  text-shadow: 1px 1px 1px rgba(60,20,4,.25);
+  opacity: 0;
+}
+.parch-wrap.on .signature { animation: inkIn .8s ease 2.9s forwards; }
+
+@keyframes inkIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Close button */
+.close-btn {
+  position: fixed; top: 20px; right: 22px; z-index: 200;
+  font-family: 'IM Fell DW Pica', serif; font-style: italic;
+  font-size: .8rem; letter-spacing: .07em;
+  color: #c8a050; background: rgba(14,8,2,.88);
+  border: 1px solid rgba(200,160,80,.35);
+  padding: 7px 18px; border-radius: 1px; cursor: pointer;
+  opacity: 0; backdrop-filter: blur(6px);
+  transition: background .2s, color .2s, opacity .4s;
+}
+.close-btn:hover { background: #c8a050; color: #180e04; }
+.close-btn.show  { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="motes" id="motes"></div>
+<div class="backdrop" id="backdrop"></div>
+
+<!-- ── Title ── -->
+<div class="title">A Message Sealed For Thee</div>
+
+<!-- ── Envelope ── -->
+<div class="env-scene">
+  <div class="envelope" id="envelope" onclick="openEnvelope()">
+
+    <!-- Dark interior (behind flap) -->
+    <div class="env-interior"></div>
+
+    <!-- Envelope body with fold shadings -->
+    <div class="env-body">
+      <div class="env-body-bg"></div>
+      <div class="env-fold-left"></div>
+      <div class="env-fold-right"></div>
+      <div class="env-fold-bottom"></div>
+    </div>
+
+    <!-- Flap (rotates open) -->
+    <div class="env-flap-wrap" id="envFlap">
+      <div class="env-flap"></div>
+    </div>
+
+    <!-- Wax seal -->
+    <div class="seal" id="seal">
+      <div class="seal-disc">
+        <span class="seal-letter">A</span>
+      </div>
+    </div>
+
+  </div><!-- /envelope -->
+
+  <div class="hint" id="hint">✦ &ensp; Press the seal to open &ensp; ✦</div>
+</div>
+
+
+<!-- ── Parchment Letter ── -->
+<div class="parch-wrap" id="parchWrap">
+  <div class="parch-scroll">
+
+    <!-- Organic parchment SVG shape with burns -->
+    <svg class="parch-svg" viewBox="0 0 600 860" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="pgBody" x1=".1" y1="0" x2=".95" y2="1">
+          <stop offset="0%"   stop-color="#ecdba8"/>
+          <stop offset="18%"  stop-color="#e2c98a"/>
+          <stop offset="42%"  stop-color="#d8b96c"/>
+          <stop offset="65%"  stop-color="#dfc07a"/>
+          <stop offset="85%"  stop-color="#c9a654"/>
+          <stop offset="100%" stop-color="#bd983e"/>
+        </linearGradient>
+        <radialGradient id="pgLight" cx="22%" cy="14%" r="55%">
+          <stop offset="0%"  stop-color="#fff8e0" stop-opacity=".30"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="pgDark" cx="82%" cy="88%" r="58%">
+          <stop offset="0%"  stop-color="#5a3008" stop-opacity=".24"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+
+        <!-- Burn corner gradients -->
+        <radialGradient id="bTL" cx="0%"   cy="0%"   r="48%">
+          <stop offset="0%"  stop-color="#080200" stop-opacity=".88"/>
+          <stop offset="32%" stop-color="#200900" stop-opacity=".48"/>
+          <stop offset="65%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="bTR" cx="100%" cy="0%"   r="44%">
+          <stop offset="0%"  stop-color="#060100" stop-opacity=".82"/>
+          <stop offset="32%" stop-color="#180600" stop-opacity=".40"/>
+          <stop offset="65%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="bBL" cx="0%"   cy="100%" r="46%">
+          <stop offset="0%"  stop-color="#0a0200" stop-opacity=".84"/>
+          <stop offset="30%" stop-color="#1e0800" stop-opacity=".42"/>
+          <stop offset="65%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="bBR" cx="100%" cy="100%" r="50%">
+          <stop offset="0%"  stop-color="#080200" stop-opacity=".88"/>
+          <stop offset="28%" stop-color="#1c0900" stop-opacity=".46"/>
+          <stop offset="65%" stop-color="transparent"/>
+        </radialGradient>
+
+        <!-- Paper noise -->
+        <filter id="pNoise">
+          <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="4"
+                        stitchTiles="stitch" result="n"/>
+          <feColorMatrix type="saturate" values=".22" in="n" result="c"/>
+          <feBlend in="SourceGraphic" in2="c" mode="multiply" result="b"/>
+          <feComposite in="b" in2="SourceGraphic" operator="in"/>
+        </filter>
+
+        <!-- Organic edge displacement -->
+        <filter id="edgeR">
+          <feTurbulence type="turbulence" baseFrequency=".032" numOctaves="5"
+                        seed="9" result="nt"/>
+          <feDisplacementMap in="SourceGraphic" in2="nt" scale="16"
+                             xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="spotR">
+          <feTurbulence type="turbulence" baseFrequency=".06" numOctaves="4"
+                        seed="4" result="nt"/>
+          <feDisplacementMap in="SourceGraphic" in2="nt" scale="10"
+                             xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+
+        <!-- Torn edge clip -->
+        <clipPath id="pClip">
+          <path d="M28,18 C42,12 72,8 110,11 C148,14 180,8 218,12
+                   C256,16 290,7 328,11 C366,15 400,8 438,12
+                   C476,16 520,9 558,16 C574,19 585,26 586,38
+                   C588,60 582,90 584,125 C586,160 580,192 582,228
+                   C584,264 578,298 580,335 C582,372 576,408 578,445
+                   C580,482 574,518 576,555 C578,592 572,628 574,665
+                   C576,702 570,738 572,774 C573,800 570,820 558,836
+                   C540,848 510,852 475,850 C440,848 405,854 368,851
+                   C331,848 294,855 256,851 C218,847 180,854 142,850
+                   C104,846 68,852 42,845 C22,839 14,826 12,810
+                   C10,788 16,758 14,722 C12,686 18,652 16,615
+                   C14,578 20,542 18,505 C16,468 22,432 20,395
+                   C18,358 24,322 22,285 C20,248 26,212 24,175
+                   C22,138 28,102 26,65 C25,48 26,24 28,18Z"/>
+        </clipPath>
+      </defs>
+
+      <g clip-path="url(#pClip)">
+        <!-- Base paper -->
+        <rect width="600" height="860" fill="url(#pgBody)"/>
+        <!-- Grain -->
+        <rect width="600" height="860" fill="url(#pgBody)" filter="url(#pNoise)" opacity=".16"/>
+        <!-- Light and shadow washes -->
+        <rect width="600" height="860" fill="url(#pgLight)"/>
+        <rect width="600" height="860" fill="url(#pgDark)"/>
+        <!-- Fibre lines (simple repeating stripes) -->
+        <rect width="600" height="860"
+              fill="url(#pgBody)" opacity=".0"
+              style="background:repeating-linear-gradient(180deg,transparent,transparent 20px,rgba(130,85,20,.04) 21px)"/>
+
+        <!-- Burns -->
+        <rect width="600" height="860" fill="url(#bTL)" filter="url(#edgeR)"/>
+        <rect width="600" height="860" fill="url(#bTR)" filter="url(#edgeR)"/>
+        <rect width="600" height="860" fill="url(#bBL)" filter="url(#edgeR)"/>
+        <rect width="600" height="860" fill="url(#bBR)" filter="url(#edgeR)"/>
+
+        <!-- Corner char concentrations -->
+        <ellipse cx="22"  cy="22"  rx="30" ry="20" fill="#050100" opacity=".70" filter="url(#spotR)"/>
+        <ellipse cx="578" cy="24"  rx="26" ry="18" fill="#040100" opacity=".65" filter="url(#spotR)"/>
+        <ellipse cx="20"  cy="838" rx="28" ry="19" fill="#050100" opacity=".68" filter="url(#spotR)"/>
+        <ellipse cx="580" cy="836" rx="32" ry="21" fill="#030100" opacity=".72" filter="url(#spotR)"/>
+
+        <!-- Ember holes -->
+        <circle cx="66"  cy="50"  r="5.5" fill="#030000" opacity=".76" filter="url(#spotR)"/>
+        <circle cx="532" cy="56"  r="6.5" fill="#030000" opacity=".70" filter="url(#spotR)"/>
+        <circle cx="54"  cy="808" r="6"   fill="#030000" opacity=".73" filter="url(#spotR)"/>
+        <circle cx="540" cy="802" r="6.5" fill="#030000" opacity=".68" filter="url(#spotR)"/>
+        <circle cx="118" cy="26"  r="3.5" fill="#040100" opacity=".58" filter="url(#spotR)"/>
+        <circle cx="474" cy="30"  r="4"   fill="#040100" opacity=".52" filter="url(#spotR)"/>
+        <circle cx="18"  cy="138" r="3.5" filter="url(#spotR)" fill="#040100" opacity=".50"/>
+        <circle cx="582" cy="148" r="3"   filter="url(#spotR)" fill="#040100" opacity=".46"/>
+        <circle cx="16"  cy="698" r="3.5" filter="url(#spotR)" fill="#040100" opacity=".48"/>
+        <circle cx="584" cy="708" r="3.5" filter="url(#spotR)" fill="#040100" opacity=".44"/>
+      </g>
+
+      <!-- Torn edge outline -->
+      <path d="M28,18 C42,12 72,8 110,11 C148,14 180,8 218,12
+               C256,16 290,7 328,11 C366,15 400,8 438,12
+               C476,16 520,9 558,16 C574,19 585,26 586,38
+               C588,60 582,90 584,125 C586,160 580,192 582,228
+               C584,264 578,298 580,335 C582,372 576,408 578,445
+               C580,482 574,518 576,555 C578,592 572,628 574,665
+               C576,702 570,738 572,774 C573,800 570,820 558,836
+               C540,848 510,852 475,850 C440,848 405,854 368,851
+               C331,848 294,855 256,851 C218,847 180,854 142,850
+               C104,846 68,852 42,845 C22,839 14,826 12,810
+               C10,788 16,758 14,722 C12,686 18,652 16,615
+               C14,578 20,542 18,505 C16,468 22,432 20,395
+               C18,358 24,322 22,285 C20,248 26,212 24,175
+               C22,138 28,102 26,65 C25,48 26,24 28,18Z"
+            fill="none" stroke="rgba(80,45,8,.45)" stroke-width="1.5"
+            filter="url(#edgeR)"/>
+    </svg>
+
+    <!-- Text layer -->
+    <div class="parch-text">
+      <div class="parch-title">A Valentine's Letter</div>
+      <div class="ornament">⸻ &thinsp;✦&thinsp; ⸻</div>
+
+      <div class="salutation">My dearest Sankina,</div>
+
+      <div class="body-text">
+        <p><span class="drop-cap">A</span>s I sit down to write this, my heart feels full. It's Valentine's Day, but loving you has never been limited to a date on the calendar. I feel it in the quiet parts of my day, in the way I smile randomly when I think of you, in the way my chest tightens when I miss you.</p>
+
+        <p>From the moment I met you, I knew you were different. Your smile caught my attention -- but it's your mind that keeps me captivated. The way you think, the way your thoughts flow, the depth behind your words… it turns me on in ways you probably don't even realise. And that laugh of yours? God. The way it escapes you so freely. It does something to me every single time.</p>
+
+        <p>Even though there's distance between us, you've managed to make yourself feel right here, in my thoughts, in my body, in my heart. I won't lie… I miss your touch deeply. I miss the idea of pulling you close, feeling you melt into me, hearing that playful tone in your voice when you're pretending to be innocent.</p>
+
+        <p>Sometimes I imagine the first time we finally close that distance. The way I'll look at you, slowly and intentionally. The way I'll hold your face before I kiss you. Not rushed, not hurried, just us. I think about tracing my hands along parts of you like I've been memorising you from afar this whole time. And knowing you… I already know you'll be shy and pretend to not want it as bad, but I know I can bring it out of you.</p>
+
+        <p>But beyond all of that, I need you to hear this clearly.</p>
+
+        <p>The time it takes for us to meet does not weaken what I am feeling. It strengthens it. Every day we wait is another day I choose you. I'm not going anywhere. You are not "too far." You are not "too delayed." You are worth the patience. Worth the anticipation. Worth every second. I hope I am too.</p>
+
+        <p>You calm me in ways you don't even know. Your presence feels safe. Your love feels intentional. And that combination is rare.</p>
+
+        <p>You are not just my Valentine today. You are my future experiences, my unanswered prayers being answered slowly, my deep desire wrapped in warmth.</p>
+
+        <p class="love-list">
+          I love your mind.<br>
+          I love your laugh.<br>
+          I love the fire in you.<br>
+          And I love the softness only I get to see.
+        </p>
+
+        <p><em>Happy Valentine's Day, my baby.</em></p>
+      </div>
+
+      <div class="ornament" style="margin-top:14px">⸻ &thinsp;✦&thinsp; ⸻</div>
+      <div class="closing">Forever choosing you,</div>
+      <div class="signature">David Anamayi</div>
+    </div>
+
+  </div><!-- /parch-scroll -->
+</div><!-- /parch-wrap -->
+
+<button class="close-btn" id="closeBtn" onclick="closeEnvelope()">✕ &ensp; Close</button>
+
+<script>
+/* ── Dust motes ── */
+const mc = document.getElementById('motes');
+for (let i = 0; i < 28; i++) {
+  const m = document.createElement('div');
+  m.className = 'mote';
+  const sz = 1 + Math.random() * 2;
+  m.style.cssText = `
+    width:${sz}px; height:${sz}px;
+    left:${Math.random()*100}vw;
+    --dx:${(Math.random()-.5)*120}px;
+    animation-duration:${10+Math.random()*14}s;
+    animation-delay:${Math.random()*18}s;
+    opacity:${.12+Math.random()*.4};
+  `;
+  mc.appendChild(m);
+}
+
+/* ── Open ── */
+let opened = false;
+
+function openEnvelope() {
+  if (opened) return;
+  opened = true;
+
+  document.getElementById('hint').classList.add('gone');
+  document.getElementById('envelope').classList.add('is-opening');
+  document.getElementById('backdrop').classList.add('on');
+
+  setTimeout(() => {
+    document.getElementById('parchWrap').classList.add('on');
+    document.getElementById('closeBtn').classList.add('show');
+  }, 550);
+}
+
+/* ── Close ── */
+function closeEnvelope() {
+  const pw     = document.getElementById('parchWrap');
+  const scroll = pw.querySelector('.parch-scroll');
+  const env    = document.getElementById('envelope');
+
+  pw.classList.remove('on');
+  document.getElementById('backdrop').classList.remove('on');
+  document.getElementById('closeBtn').classList.remove('show');
+
+  setTimeout(() => {
+    /* reset animation so it replays on next open */
+    scroll.style.animation = 'none';
+    scroll.offsetHeight;
+    scroll.style.animation = '';
+
+    env.classList.remove('is-opening');
+    document.getElementById('hint').classList.remove('gone');
+    opened = false;
+  }, 500);
+}
+
+/* Click backdrop to close */
+document.getElementById('backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('backdrop')) closeEnvelope();
+});
+</script>
+</body>
+</html>
